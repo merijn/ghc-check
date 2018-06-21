@@ -1,0 +1,65 @@
+Name:               ghc-check
+Version:            0.1.0
+
+Homepage:           
+Bug-Reports:        
+
+Author:             Merijn Verstraaten
+Maintainer:         Merijn Verstraaten <merijn@inconsistent.nl>
+Copyright:          Copyright © 2017 Merijn Verstraaten
+
+License:            BSD3
+License-File:       LICENSE
+
+Category:           System
+Cabal-Version:      >= 1.10
+Build-Type:         Simple
+Tested-With:        GHC == 8.2.2, GHC == 8.4.1, GHC == 8.5.*
+
+Extra-Source-Files: README.md
+                  , CHANGELOG.md
+
+Synopsis:           
+Description:
+
+Data-Files:           ghc-check.ghci
+
+Executable ghc-check
+  Default-Language:     Haskell2010
+  GHC-Options:          -Wall -fno-warn-unused-do-bind
+  GHC-Prof-Options:     -fprof-auto
+  Main-Is:              Main.hs
+
+  Other-Modules:        Cabal
+                        Checker
+                        Component
+                        Paths_ghc_check
+
+  Autogen-Modules:      Paths_ghc_check
+
+  Build-Depends:        base == 4.*
+               ,        attoparsec == 0.13.*
+               ,        binary == 0.8.*
+               ,        bytestring
+               ,        cabal-plan == 0.3.0.*
+               ,        containers
+               ,        directory >= 1.2
+               ,        exceptions == 0.8.3
+               ,        filepath
+               ,        ghcid == 0.7.*
+               ,        microlens == 0.4.*
+               ,        microlens-mtl == 0.1.*
+               ,        microlens-th == 0.4.*
+               ,        mtl == 2.2.1
+               --,        network == 2.6.*
+               ,        optparse-applicative == 0.14.0.*
+               ,        process == 1.6.3.*
+               ,        stm
+               ,        time >= 1.5
+               ,        text
+               ,        transformers == 0.5.*
+
+
+Source-Repository head
+  Type:     git
+  Location: ssh://github.com:merijn/

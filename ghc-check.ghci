@@ -1,0 +1,3 @@
+:set -fobject-code
+:set -fforce-recomp
+:set -fno-diagnostics-show-caret
