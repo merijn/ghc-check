@@ -1,4 +1,3 @@
 packages: ./ghc-check.cabal
-optional-packages: ~/src/cabal-plan/cabal-plan.cabal
 jobs: 8
 optimization: 2
