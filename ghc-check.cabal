@@ -22,7 +22,7 @@ Extra-Source-Files: README.md
 Synopsis:           
 Description:
 
-Data-Files:           ghc-check.ghci
+Data-Files:           ghc-check.ghci, ghc-check-uncached.ghci
 
 Executable ghc-check
   Default-Language:     Haskell2010

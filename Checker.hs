@@ -161,7 +161,7 @@ runGhci
     -> CheckerM (CheckerM (), IO ())
 runGhci logMsg activeComponent = do
     (ghci, msgs) <- liftIO $ do
-        proc <- createCabalReplProc activeComponent []
+        proc <- createCabalReplProc False activeComponent []
         result@(ghci, _) <- Ghci.startGhciProcess proc logMsg
         Ghci.execStream ghci ":set -fno-force-recomp" logMsg
         return result

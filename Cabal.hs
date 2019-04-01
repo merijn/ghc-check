@@ -7,6 +7,7 @@ import Control.Exception (Exception, throwIO)
 import Control.Monad (void)
 import Control.Monad.IO.Class (MonadIO(..))
 import Data.Attoparsec.Text
+import Data.Bool (bool)
 import Data.Map (Map)
 import qualified Data.Map as M
 import Data.Text (Text)
@@ -46,9 +47,12 @@ runProcess createProc = liftIO $ do
 createPlanJson :: MonadIO m => m ()
 createPlanJson = void . runProcess $ proc "cabal" ["new-build", "all", "--dry"]
 
-createCabalReplProc :: MonadIO m => Component -> [String] -> m CreateProcess
-createCabalReplProc comp extraArgs = do
-    fp <- liftIO $ getDataFileName "ghc-check.ghci"
+createCabalReplProc
+    :: MonadIO m => Bool -> Component -> [String] -> m CreateProcess
+createCabalReplProc recompile comp extraArgs = liftIO $ do
+    fp <- bool (getDataFileName "ghc-check.ghci")
+               (getDataFileName "ghc-check-uncached.ghci")
+               recompile
     return . proc "cabal" $ mconcat
         [ ["new-repl", componentTarget comp]
         , extraArgs
@@ -59,7 +63,7 @@ createCabalReplProc comp extraArgs = do
 
 checkComponent :: MonadIO m => Component -> m a -> m a -> m a
 checkComponent target reset reload = do
-    output <- createCabalReplProc target ["--dry"] >>= runProcess
+    output <- createCabalReplProc False target ["--dry"] >>= runProcess
 
     case parseOnly (noUpdates <|> componentUpdates) output of
         Left s -> liftIO . throwIO $ CabalException s
