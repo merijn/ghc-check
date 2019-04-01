@@ -91,11 +91,12 @@ updateProjectState verb pj = do
 
 withChecker
     :: Verbosity
+    -> Bool
     -> FilePath
     -> IO CheckerCommand
     -> Maybe ProjectState
     -> IO (Result, ProjectState)
-withChecker verb projRoot loadCmd mProjState =
+withChecker verb recompile projRoot loadCmd mProjState =
   withCurrentDirectory projRoot $ do
     projState <- updateProjectState verb initProjectState
     loadCmd >>= \case
@@ -127,8 +128,11 @@ withChecker verb projRoot loadCmd mProjState =
 
     ghciLoop :: Component -> CheckerM (Either Result (Maybe Component))
     ghciLoop currComponent =
-      bracket (runGhci logMsg currComponent) (liftIO . snd) $ updateLoop . fst
+      bracket startGhci (liftIO . snd) $ updateLoop . fst
       where
+        startGhci :: CheckerM (CheckerM (), IO ())
+        startGhci = runGhci recompile logMsg currComponent
+
         updateLoop :: CheckerM () -> CheckerM (Either Result (Maybe Component))
         updateLoop updateWarnings = loop
           where
@@ -156,14 +160,15 @@ withChecker verb projRoot loadCmd mProjState =
             get >>= updateProjectState verb >>= put
 
 runGhci
-    :: (Stream -> String -> IO ())
+    :: Bool
+    -> (Stream -> String -> IO ())
     -> Component
     -> CheckerM (CheckerM (), IO ())
-runGhci logMsg activeComponent = do
+runGhci recompile logMsg activeComponent = do
     (ghci, msgs) <- liftIO $ do
-        proc <- createCabalReplProc False activeComponent []
+        proc <- createCabalReplProc recompile activeComponent []
         result@(ghci, _) <- Ghci.startGhciProcess proc logMsg
-        Ghci.execStream ghci ":set -fno-force-recomp" logMsg
+        when recompile $ Ghci.execStream ghci ":set -fno-force-recomp" logMsg
         return result
 
     loadedFiles .= S.fromList [loadFile | Loading{..} <- msgs]

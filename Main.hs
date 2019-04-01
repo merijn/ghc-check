@@ -33,6 +33,7 @@ type CacheFun
 data Checker = Checker
     { checkerVerbosity :: Verbosity
     , checkerCommand :: Command
+    , checkerCaching :: Bool
     }
 
 data Command
@@ -40,8 +41,8 @@ data Command
     | Daemon FilePath CacheFun
     | Check FilePath CacheFun
 
---cmdParser :: ParserInfo Checker
-cmdParser = info (Checker <$> verbosity <*> commands <**> helper) $ mconcat
+cmdParser :: ParserInfo Checker
+cmdParser = info (Checker <$> verbosity <*> commands <*> caching <**> helper) $ mconcat
     [ fullDesc
     , header $ "ghc-check v" ++ showVersion version
     ]
@@ -63,6 +64,10 @@ cmdParser = info (Checker <$> verbosity <*> commands <**> helper) $ mconcat
         vOption = option auto . mconcat $
             [ short 'v', long "verbose", help "Enable more verbose logging."
             , value 0, metavar "N", showDefault ]
+
+    caching :: Parser Bool
+    caching = flag False True $ mconcat
+        [ short 'c', long "cache", help "Enable caching." ]
 
     commands :: Parser Command
     commands = hsubparser $ mconcat
@@ -133,7 +138,7 @@ main = do
     hSetBuffering stdout LineBuffering
     hSetBuffering stderr NoBuffering
     Checker{..} <- execParser cmdParser
-    let check = withChecker checkerVerbosity
+    let check = withChecker checkerVerbosity checkerCaching
     case checkerCommand of
         Root sourceFile -> reportRoot sourceFile >>= putStrLn
         Daemon sourceFile withCache -> do
