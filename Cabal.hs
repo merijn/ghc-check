@@ -19,9 +19,9 @@ import System.Process
 import Component
 import Paths_ghc_check (getDataFileName)
 
-data TmpException = TmpException deriving (Show)
+data CabalException = CabalException String deriving (Show)
 
-instance Exception TmpException
+instance Exception CabalException
 
 data RebuildState = Reload | Restart
     deriving (Eq, Show)
@@ -62,7 +62,7 @@ checkComponent target reset reload = do
     output <- createCabalReplProc target ["--dry"] >>= runProcess
 
     case parseOnly (noUpdates <|> componentUpdates) output of
-        Left _ -> liftIO $ throwIO TmpException
+        Left s -> liftIO . throwIO $ CabalException s
         Right updates
             | checkRebuildStates updates -> reload
             | otherwise -> reset
